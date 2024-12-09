@@ -23,12 +23,14 @@ from sales
 order by avg(sales.quantity * products.price);  
 
 -- day of the week income
-select employees.first_name || ' ' || employees.last_name as seller, trim(both to_char(sales.sale_date, 'day')) as day_of_week, floor(sum(sales.quantity * products.price)) as income
+select seller, day_of_week, floor(sum(income)) as income
+from
+(select employees.first_name || ' ' || employees.last_name as seller, trim(both to_char(sales.sale_date, 'day')) as day_of_week, sales.quantity * products.price as income, extract(isodow from sales.sale_date) as dow
 from sales 
   inner join employees on sales.sales_person_id = employees.employee_id  
-  inner join products  on sales.product_id      = products.product_id 
-group by employees.first_name, employees.last_name, sales.sale_date
-order by extract(isodow from sales.sale_date), employees.first_name || ' ' || employees.last_name; 
+  inner join products  on sales.product_id      = products.product_id) as x1 
+group by seller, day_of_week, dow
+order by dow, seller;  
 
 -- age groups
 select case when age between 16 and 25 then '16-25' when age between 26 and 40 then '26-40' when age > 40 then '40+' end age_category, count(*) as age_count
